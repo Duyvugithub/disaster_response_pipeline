@@ -1,16 +1,49 @@
 import sys
+import pandas as pd
+from sqlalchemy import create_engine
+import sqlite3
 
 
 def load_data(messages_filepath, categories_filepath):
-    pass
-
+    # load messages dataset
+    messages = pd.read_csv(messages_filepath)
+    
+    # load categories dataset
+    categories = pd.read_csv(categories_filepath)
+    
+    # merge datasets
+    df = messages.merge(categories, how='left', on=['id'])
+   
+    return df
 
 def clean_data(df):
-    pass
-
+    # create a dataframe of the 36 individual category columns
+    categories = df['categories'].str.split(pat=";", expand=True)
+    # rename the columns of `categories`
+    row = categories.iloc[0, :]
+    category_colnames = row.str[:-2]
+    categories.columns = category_colnames
+    
+    # Convert category values to just numbers 0 or 1.
+    for column in categories:
+        categories[column] = categories[column].str[-1]
+        categories[column] = categories[column].astype(int)
+        
+    # concatenate the original dataframe with the new `categories` dataframe
+    df.drop(columns=['categories'], inplace=True)
+    df = pd.concat([df, categories], axis=1)
+    df.drop_duplicates(inplace=True)
+    return df
 
 def save_data(df, database_filename):
-    pass  
+    conn = sqlite3.connect('InsertDatabaseName.db')
+    cur = conn.cursor()
+    cur.execute("DROP TABLE IF EXISTS InsertTableName")
+    conn.close()
+    
+    # Load data into InsertTableName
+    engine = create_engine('sqlite:///' + database_filename)
+    df.to_sql('InsertTableName', engine, index=False)
 
 
 def main():
