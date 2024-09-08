@@ -5,6 +5,16 @@ import sqlite3
 
 
 def load_data(messages_filepath, categories_filepath):
+    """
+    Load and merge messages and categories datasets.
+
+    Input:
+    messages_filepath: Path to the messages CSV file.
+    categories_filepath: Path to the categories CSV file.
+
+    Output:
+    pd.DataFrame: Merged dataframe containing messages and categories.
+    """
     # load messages dataset
     messages = pd.read_csv(messages_filepath)
     
@@ -17,6 +27,17 @@ def load_data(messages_filepath, categories_filepath):
     return df
 
 def clean_data(df):
+    """
+    Clean the dataframe by splitting the 'categories' column
+    into separate category columns and converting category values 
+    to numerical values.
+
+    input:
+    df: Dataframe containing the 'categories' column.
+
+    output:
+    DataFrame: Cleaned dataframe with individual category columns.
+    """
     # create a dataframe of the 36 individual category columns
     categories = df['categories'].str.split(pat=";", expand=True)
     # rename the columns of `categories`
@@ -36,6 +57,13 @@ def clean_data(df):
     return df
 
 def save_data(df, database_filename):
+    """
+    Save the cleaned dataframe to an SQLite database.
+
+    Input:
+    df: Dataframe to be saved to the database.
+    database_filename: Path to the SQLite database file.
+    """
     conn = sqlite3.connect('InsertDatabaseName.db')
     cur = conn.cursor()
     cur.execute("DROP TABLE IF EXISTS InsertTableName")
@@ -47,6 +75,9 @@ def save_data(df, database_filename):
 
 
 def main():
+    """
+    Main function to load, clean, and save data based on command-line arguments.
+    """
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
