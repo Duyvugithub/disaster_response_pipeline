@@ -54,6 +54,9 @@ def clean_data(df):
     df.drop(columns=['categories'], inplace=True)
     df = pd.concat([df, categories], axis=1)
     df.drop_duplicates(inplace=True)
+    # Remove case multiclass in "related" column
+    df = df[df['related'] != 2]
+
     return df
 
 def save_data(df, database_filename):
@@ -64,14 +67,14 @@ def save_data(df, database_filename):
     df: Dataframe to be saved to the database.
     database_filename: Path to the SQLite database file.
     """
-    conn = sqlite3.connect('InsertDatabaseName.db')
+    conn = sqlite3.connect(database_filename)
     cur = conn.cursor()
     cur.execute("DROP TABLE IF EXISTS InsertTableName")
     conn.close()
     
     # Load data into InsertTableName
     engine = create_engine('sqlite:///' + database_filename)
-    df.to_sql('InsertTableName', engine, index=False)
+    df.to_sql('InsertTableName', engine, index=False, if_exists='replace')
 
 
 def main():
